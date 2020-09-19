@@ -16,8 +16,7 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	//TODO: go to expenses_users-api an make POST to /users/login to check credentials
-	at, err := services.UsersService.CreateToken(userLoginRequest)
+	at, err := services.AccessTokenService.CreateToken(userLoginRequest)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
