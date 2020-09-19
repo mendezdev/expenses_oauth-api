@@ -19,12 +19,12 @@ var (
 type accessTokenService struct{}
 
 type accessTokenServiceInterface interface {
-	CreateToken(users.UserLoginRequest) (*access_token.AccessToken, error) // change error to api_errors.RestErr
+	CreateToken(users.UserLoginRequest) (*access_token.AccessToken, api_errors.RestErr) // change error to api_errors.RestErr
 	TokenValid(string) api_errors.RestErr
 	ExtractTokenMetadata(string) (*access_token.AccessDetails, api_errors.RestErr)
 }
 
-func (s *accessTokenService) CreateToken(ur users.UserLoginRequest) (*access_token.AccessToken, error) {
+func (s *accessTokenService) CreateToken(ur users.UserLoginRequest) (*access_token.AccessToken, api_errors.RestErr) {
 	var err error
 	atSecret := "AT_SECRET" //implment this os.Getenv("ACESS_TOKEN_SECRET")
 	rtSecret := "RT_SECRET" //implment this os.Getenv("ACESS_TOKEN_SECRET")
@@ -46,7 +46,7 @@ func (s *accessTokenService) CreateToken(ur users.UserLoginRequest) (*access_tok
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	td.AccessToken, err = at.SignedString([]byte(atSecret))
 	if err != nil {
-		return nil, err
+		return nil, api_errors.NewInternalServerError("error trying to create access token", err)
 	}
 
 	//Creating refresh token
@@ -54,7 +54,7 @@ func (s *accessTokenService) CreateToken(ur users.UserLoginRequest) (*access_tok
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 	td.RefreshToken, err = rt.SignedString([]byte(rtSecret))
 	if err != nil {
-		return nil, err
+		return nil, api_errors.NewInternalServerError("error trying to refresh access token", err)
 	}
 
 	savedAuthErr := RedisService.CreateAuth(userResponse.ID, td)

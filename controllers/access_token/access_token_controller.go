@@ -16,10 +16,11 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	at, err := services.AccessTokenService.CreateToken(userLoginRequest)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+	at, createTokenErr := services.AccessTokenService.CreateToken(userLoginRequest)
+	if createTokenErr != nil {
+		c.JSON(createTokenErr.Status(), createTokenErr)
 		return
 	}
+
 	c.JSON(http.StatusCreated, at)
 }
